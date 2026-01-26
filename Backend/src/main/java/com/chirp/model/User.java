@@ -13,7 +13,7 @@ import jakarta.persistence.Entity;
     @Table(name="chirp_user")
     public class User {
         @Id
-        @GeneratedValue(strategy=GenerationType.AUTO)
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
         private Long id;
         @Column(name="username", length=50, nullable=false, unique=false)
         private String username;
