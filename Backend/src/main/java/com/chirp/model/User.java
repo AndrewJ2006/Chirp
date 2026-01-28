@@ -15,13 +15,13 @@ import jakarta.persistence.Entity;
         @Id
         @GeneratedValue(strategy=GenerationType.IDENTITY)
         private Long id;
-        @Column(name="username", length=50, nullable=false, unique=false)
+        @Column(name="username", length=50, nullable=false)
         private String username;
-        @Column(name="email", length=50, nullable=false, unique=false)
+        @Column(name="email", length=255, nullable=false)
         private String email;
-        @Column(name="password", length=50, nullable=false, unique=false)
+        @Column(name="password", length=255, nullable=false)  // increase length!
         private String password;
-        @Column(name="created", nullable=false, unique=false)
+        @Column(name="created", nullable=false)
         private LocalDateTime createdAt;
 
 

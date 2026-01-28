@@ -1,5 +1,6 @@
 package com.chirp.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.chirp.Config.JwtService;
 import com.chirp.dto.LoginRequest;
+import com.chirp.dto.ProfileRequest;
 import com.chirp.dto.RegisterRequest;
 import com.chirp.model.User;
 import com.chirp.repository.UserRepository;
@@ -29,22 +31,7 @@ private final JwtService jwtService;
 
     public Long registerUser(RegisterRequest request) {
 
-        if (request.getUsername().length() == 0) {
-            throw new IllegalArgumentException("Pls fill in username");
-        }
-         if (request.getEmail().length() == 0) {
-            throw new IllegalArgumentException("Pls fill in email");
-        }
-
-                                                                    //returns boolean
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already exists");
-        }
-
-         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-
+        validateUsernameAndEmail(request);
 
        String hashedPassword = passwordEncoder.encode(request.getPassword());
 
@@ -52,6 +39,7 @@ private final JwtService jwtService;
        user.setEmail(request.getEmail());
        user.setUsername(request.getUsername());
        user.setPassword(hashedPassword);
+       user.setCreatedAt(LocalDateTime.now());
 
 
        User savedUser = userRepository.save(user);
@@ -64,22 +52,19 @@ private final JwtService jwtService;
 
     public String loginUser(LoginRequest request) {
 
+        User user = null;
 
-        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-        Optional<User> optionalUser2 = userRepository.findByUsername(request.getUsername());
-
-        if (optionalUser.isEmpty() && optionalUser2.isEmpty()) {
-            throw new IllegalArgumentException("User does not exist");
-        } 
-
-        User user;
-
-        if (optionalUser.isPresent()) {
-             user = optionalUser.get();
-        } else {
-             user = optionalUser2.get();
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            user = userRepository.findByEmail(request.getEmail()).orElse(null);
         }
 
+        if (user == null && request.getUsername() != null && !request.getUsername().trim().isEmpty()) {
+            user = userRepository.findByUsername(request.getUsername()).orElse(null);
+        }
+
+        if (user == null) {
+            throw new IllegalArgumentException("User does not exist");
+        }
 
         boolean match = passwordEncoder.matches(request.getPassword(), user.getPassword());     
 
@@ -87,9 +72,56 @@ private final JwtService jwtService;
             throw new IllegalArgumentException("Wrong Password");
         }
 
-        //JWT
-        return jwtService.generateToken(user.getUsername());
+        
+        return jwtService.generateToken(user.getEmail());
     }
+
+
+   public ProfileRequest getUserProfile(Long id) {
+
+    Optional<User> user1 = userRepository.findById(id);
+
+
+    User user2;
+
+    if (user1.isPresent()) {
+        user2 = user1.get();
+    } else {
+        throw new IllegalArgumentException("No user");
+    }
+    ProfileRequest profile = new ProfileRequest();
+
+    profile.setEmail(user2.getEmail());
+    profile.setUsername(user2.getUsername());
+    profile.setCreatedAt(user2.getCreatedAt());
+    profile.setId(user2.getId());
+
+    return profile;
+   
+
+   }
+
+   public void validateUsernameAndEmail(RegisterRequest request) {
+
+         if (request.getUsername().length() == 0) {
+             throw new IllegalArgumentException("Please fill in username");
+       
+            }
+         if (request.getEmail().length() == 0) {
+            throw new IllegalArgumentException("Please fill in email");
+        }
+
+                                                                    
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
+         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+
+   }
+
 
 }
 
