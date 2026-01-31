@@ -3,9 +3,13 @@ package com.chirp.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.chirp.config.CustomUserDetails;
 import com.chirp.config.JwtService;
 import com.chirp.dto.LoginRequest;
 import com.chirp.dto.ProfileRequest;
@@ -16,7 +20,7 @@ import com.chirp.repository.UserRepo;
 
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
  
 private final UserRepo userRepository;
 private final PasswordEncoder passwordEncoder;
@@ -73,7 +77,7 @@ private final JwtService jwtService;
         }
 
         
-        return jwtService.generateToken(user.getEmail());
+        return jwtService.generateToken(user.getUsername());
     }
 
 
@@ -124,11 +128,17 @@ private final JwtService jwtService;
 
    public Optional<User> findById(Long id) {
     return userRepository.findById(id);
-    
     }
 
 
+    //for JWT, spring secuirty for user
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return new CustomUserDetails(user);
 
+    }
 }
 
 
