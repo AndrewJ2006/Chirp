@@ -6,23 +6,23 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.chirp.Config.JwtService;
+import com.chirp.config.JwtService;
 import com.chirp.dto.LoginRequest;
 import com.chirp.dto.ProfileRequest;
 import com.chirp.dto.RegisterRequest;
 import com.chirp.model.User;
-import com.chirp.repository.UserRepository;
+import com.chirp.repository.UserRepo;
 
 
 
 @Service
 public class UserService {
  
-private final UserRepository userRepository;
+private final UserRepo userRepository;
 private final PasswordEncoder passwordEncoder;
 private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -121,6 +121,12 @@ private final JwtService jwtService;
         }
 
    }
+
+   public Optional<User> findById(Long id) {
+    return userRepository.findById(id);
+    
+    }
+
 
 
 }

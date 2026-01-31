@@ -1,4 +1,4 @@
-package com.chirp.Config;
+package com.chirp.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

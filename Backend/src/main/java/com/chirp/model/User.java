@@ -4,10 +4,10 @@
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-    import jakarta.persistence.GeneratedValue;
-    import jakarta.persistence.GenerationType;
-    import jakarta.persistence.Id;
-    import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
     @Entity
     @Table(name="chirp_user")
@@ -24,6 +24,9 @@ import jakarta.persistence.Entity;
         @Column(name="created", nullable=false)
         private LocalDateTime createdAt;
 
+        @Column(name = "is_private")
+        private boolean isPrivate = false;
+
 
         public User() {
             //for springboot 
@@ -33,6 +36,7 @@ import jakarta.persistence.Entity;
             this.username = username;
             this.email = email;
             this.password = password;
+            this.isPrivate = false;
 
         }
 
@@ -74,6 +78,14 @@ import jakarta.persistence.Entity;
 
         public void setCreatedAt(LocalDateTime createdAt) {
             this.createdAt = createdAt;
+        }
+
+        public boolean isPrivate() {
+            return isPrivate;
+        }
+
+        public void setPrivate(boolean isPrivate) {
+            this.isPrivate = isPrivate;
         }
 
     }

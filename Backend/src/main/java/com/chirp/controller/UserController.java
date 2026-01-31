@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+
 import com.chirp.dto.LoginRequest;
 import com.chirp.dto.ProfileRequest;
 import com.chirp.dto.RegisterRequest;
@@ -44,8 +46,7 @@ public class UserController {
         }
 
         @GetMapping("/profile/{id}")
-        public ProfileRequest getUserProfile(@PathVariable Long id) {
-
-            return userService.getUserProfile(id);
-        }
+        public ProfileRequest getUserProfile(@PathVariable Long id, Principal principal) {
+             return userService.getUserProfile(id);
+}
 }
