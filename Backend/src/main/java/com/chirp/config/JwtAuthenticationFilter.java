@@ -45,7 +45,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    // Unwrap the actual User entity from CustomUserDetails
                     User user = ((CustomUserDetails) userDetails).getUser();
                     
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -57,7 +56,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (Exception e) {
-                // Authentication failed, continue to next filter
             }
         }
         
