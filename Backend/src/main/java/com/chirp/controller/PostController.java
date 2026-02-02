@@ -19,8 +19,14 @@ import com.chirp.model.User;
 import com.chirp.service.PostService;
 import com.chirp.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/posts")
+@Tag(name = "Posts", description = "Create and retrieve posts")
+@SecurityRequirement(name = "bearerAuth")
 public class PostController {
     
     private final PostService postService;
@@ -32,26 +38,31 @@ public class PostController {
     }
 
     @PostMapping
+    @Operation(summary = "Create a post")
     public PostResponse createPost(@AuthenticationPrincipal User author, @RequestBody PostRequest request) {
         return postService.createPost(author, request.getContent());
     }
 
     @PutMapping("/{postId}")
+    @Operation(summary = "Update a post")
     public PostResponse updatePost(@AuthenticationPrincipal User author, @PathVariable Long postId, @RequestBody PostRequest request) {
         return postService.updatePost(author, postId, request.getContent());
     }
 
     @DeleteMapping("/{postId}")
+    @Operation(summary = "Delete a post")
     public String deletePost(@AuthenticationPrincipal User author, @PathVariable Long postId) {
         return postService.deletePost(author, postId);
     }
 
     @GetMapping("/{postId}")
+    @Operation(summary = "Get a post by id")
     public PostResponse getPost(@PathVariable Long postId) {
         return postService.getPost(postId);
     }
 
     @GetMapping("/users/{userId}/posts")
+    @Operation(summary = "Get posts by user")
     public List<PostResponse> getPostsByUser(@PathVariable Long userId) {
         User user = userService.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
@@ -59,6 +70,7 @@ public class PostController {
     }
 
     @GetMapping("/feed")
+    @Operation(summary = "Get feed of followed users")
     public List<PostResponse> getFeed(
         @AuthenticationPrincipal User currentUser,
         @RequestParam(defaultValue = "0") int page,

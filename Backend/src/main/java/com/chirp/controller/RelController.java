@@ -16,8 +16,14 @@ import com.chirp.model.User;
 import com.chirp.service.RelService;
 import com.chirp.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/relationships")
+@Tag(name = "Relationships", description = "Follow/unfollow and follow lists")
+@SecurityRequirement(name = "bearerAuth")
 public class RelController {
     
     private final RelService relService;
@@ -29,6 +35,7 @@ public class RelController {
         this.userService = userService;
     }
     @PostMapping("/follow")
+    @Operation(summary = "Follow a user")
     public Following followUser(@AuthenticationPrincipal User requester,@RequestParam Long followingId) {
 
         User following = userService.findById(followingId)
@@ -39,6 +46,7 @@ public class RelController {
 
 
     @PostMapping("/unfollow")
+    @Operation(summary = "Unfollow a user")
     public Following unfollowUser(@AuthenticationPrincipal User requester, @RequestParam Long followingId) {
 
         User following = userService.findById(followingId)
@@ -49,6 +57,7 @@ public class RelController {
 
 
     @GetMapping("/followers/{userId}")
+    @Operation(summary = "Get followers of a user")
     public List<Follower> getFollowers(@PathVariable Long userId, @AuthenticationPrincipal User requester) {
 
         return relService.getFollowers(userId, requester);
@@ -56,6 +65,7 @@ public class RelController {
 
 
     @GetMapping("/following/{userId}")
+    @Operation(summary = "Get following list for a user")
     public List<Following> getFollowing(@PathVariable Long userId, @AuthenticationPrincipal User requester) {
 
         return relService.getFollowing(userId, requester);
@@ -63,6 +73,7 @@ public class RelController {
     }
 
     @GetMapping("/is-following")
+    @Operation(summary = "Check if current user follows another user")
     public boolean isFollowing(@AuthenticationPrincipal User requester, @RequestParam Long followingId) {
 
         User following = userService.findById(followingId)

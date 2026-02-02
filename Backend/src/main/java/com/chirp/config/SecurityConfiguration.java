@@ -28,6 +28,13 @@ public class SecurityConfiguration {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/users/register", "/users/login").permitAll()
+                .requestMatchers(
+                    // allow acces to swagger and Open API endpoints
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/webjars/**"
+                ).permitAll()
                 .requestMatchers("/users/profile/**").authenticated()
                 .anyRequest().authenticated()
             )

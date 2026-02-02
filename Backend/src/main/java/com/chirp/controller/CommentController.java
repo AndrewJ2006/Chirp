@@ -17,7 +17,13 @@ import com.chirp.model.User;
 import com.chirp.service.CommentService;
 import com.chirp.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
+@Tag(name = "Comments", description = "Create and manage comments")
+@SecurityRequirement(name = "bearerAuth")
 public class CommentController {
 
 	private final CommentService commentService;
@@ -29,6 +35,7 @@ public class CommentController {
 	}
 
 	@PostMapping("/comments/{postId}")
+	@Operation(summary = "Add a comment to a post")
 	public CommentResponse addComment(@AuthenticationPrincipal User author,
 									  @PathVariable Long postId,
 									  @RequestBody CommentRequest request) {
@@ -36,11 +43,13 @@ public class CommentController {
 	}
 
 	@GetMapping("/posts/{postId}/comments")
+	@Operation(summary = "Get comments for a post")
 	public List<CommentResponse> getCommentsByPost(@PathVariable Long postId) {
 		return commentService.getCommentsByPost(postId);
 	}
 
 	@PutMapping("/comments/{commentId}")
+	@Operation(summary = "Update a comment")
 	public CommentResponse updateComment(@AuthenticationPrincipal User author,
 										 @PathVariable Long commentId,
 										 @RequestBody CommentRequest request) {
@@ -48,12 +57,14 @@ public class CommentController {
 	}
 
 	@DeleteMapping("/comments/{commentId}")
+	@Operation(summary = "Delete a comment")
 	public String deleteComment(@AuthenticationPrincipal User author,
 								@PathVariable Long commentId) {
 		return commentService.deleteComment(author, commentId);
 	}
 
 	@GetMapping("/users/{userId}/comments")
+	@Operation(summary = "Get comments by user")
 	public List<CommentResponse> getCommentsByUser(@PathVariable Long userId) {
 		User user = userService.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("User does not exist"));
