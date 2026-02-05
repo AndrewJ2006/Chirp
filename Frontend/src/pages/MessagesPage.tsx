@@ -174,38 +174,6 @@ export default function MessagesPage() {
           }}
         >
           <h2 className="header-title" style={{ fontSize: "18px" }}>Chat</h2>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              type="button"
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                border: "1px solid #2f3336",
-                background: "transparent",
-                color: "#e7e9ea",
-                cursor: "pointer"
-              }}
-              aria-label="Settings"
-            >
-           
-            </button>
-            <button
-              type="button"
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                border: "1px solid #2f3336",
-                background: "transparent",
-                color: "#e7e9ea",
-                cursor: "pointer"
-              }}
-              aria-label="New message"
-            >
-         
-            </button>
-          </div>
         </div>
       </header>
 
