@@ -11,12 +11,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.chirp.config.CustomUserDetails;
 import com.chirp.config.JwtService;
 import com.chirp.config.UserDetailsImpl;
 import com.chirp.dto.LoginRequest;
 import com.chirp.dto.ProfileRequest;
 import com.chirp.dto.RegisterRequest;
+import com.chirp.exception.UserNotFoundException;
 import com.chirp.model.User;
 import com.chirp.repository.UserRepo;
 
@@ -94,7 +94,7 @@ private final JwtService jwtService;
     if (user1.isPresent()) {
         user2 = user1.get();
     } else {
-        throw new IllegalArgumentException("No user");
+        throw new UserNotFoundException("User not found with ID: " + id);
     }
     ProfileRequest profile = new ProfileRequest();
 

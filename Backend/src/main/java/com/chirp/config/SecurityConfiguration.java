@@ -28,6 +28,11 @@ public class SecurityConfiguration {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/users/register", "/users/login").permitAll()
+                .requestMatchers("/users/profile/**").permitAll()
+                .requestMatchers("/users/search").permitAll()
+                .requestMatchers("/relationships/followers/**").permitAll()
+                .requestMatchers("/relationships/following/**").permitAll()
+                .requestMatchers("/api/redis-test/**").permitAll()
                 .requestMatchers(
                     // allow acces to swagger and Open API endpoints
                     "/swagger-ui/**",
@@ -35,7 +40,9 @@ public class SecurityConfiguration {
                     "/swagger-ui.html",
                     "/webjars/**"
                 ).permitAll()
-                .requestMatchers("/users/profile/**").authenticated()
+                .requestMatchers("/users/me").authenticated()
+                .requestMatchers("/users/**").authenticated()
+                .requestMatchers("/relationships/**").authenticated()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->

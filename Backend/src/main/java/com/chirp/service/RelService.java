@@ -86,10 +86,10 @@ public class RelService {
             }
             User user = userOpt.get();
 
-            //Privacy
+            //Privacy - only enforce if user is private and requester is not authenticated or not the user
             if (user.isPrivate()) {
-                if (!user.getId().equals(requester.getId())
-                    && !isFollowing(requester, user)) {
+                if (requester == null || (!user.getId().equals(requester.getId())
+                    && !isFollowing(requester, user))) {
                     throw new IllegalArgumentException("This account is private");
                 }
             }
@@ -118,10 +118,10 @@ public class RelService {
            }
            User user = userOpt.get();
 
-           //Privacy
+           //Privacy - only enforce if user is private and requester is not authenticated or not the user
             if (user.isPrivate()) {
-                if (!user.getId().equals(requester.getId())
-                    && !isFollowing(requester, user)) {
+                if (requester == null || (!user.getId().equals(requester.getId())
+                    && !isFollowing(requester, user))) {
                     throw new IllegalArgumentException("This account is private");
                 }
             }

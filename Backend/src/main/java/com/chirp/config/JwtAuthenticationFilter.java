@@ -1,6 +1,5 @@
 package com.chirp.config;
 
-import com.chirp.model.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

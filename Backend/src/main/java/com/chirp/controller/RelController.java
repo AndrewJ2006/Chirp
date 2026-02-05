@@ -65,8 +65,12 @@ public class RelController {
     @Operation(summary = "Get followers of a user")
     public List<Follower> getFollowers(@PathVariable Long userId, @AuthenticationPrincipal UserDetails userDetails) {
 
-        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
-        return relService.getFollowers(userId, userDetailsImpl.getUser());
+        User requester = null;
+        if (userDetails != null) {
+            UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+            requester = userDetailsImpl.getUser();
+        }
+        return relService.getFollowers(userId, requester);
     }
 
 
@@ -74,8 +78,12 @@ public class RelController {
     @Operation(summary = "Get following list for a user")
     public List<Following> getFollowing(@PathVariable Long userId, @AuthenticationPrincipal UserDetails userDetails) {
 
-        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
-        return relService.getFollowing(userId, userDetailsImpl.getUser());
+        User requester = null;
+        if (userDetails != null) {
+            UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+            requester = userDetailsImpl.getUser();
+        }
+        return relService.getFollowing(userId, requester);
 
     }
 

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.chirp.config.UserDetailsImpl;
 import com.chirp.dto.LikeResponse;
-import com.chirp.model.User;
 import com.chirp.service.LikeService;
 
 import io.swagger.v3.oas.annotations.Operation;

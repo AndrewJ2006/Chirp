@@ -28,7 +28,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     // 404 Not Found
-    @ExceptionHandler({ ResourceNotFoundException.class })
+    @ExceptionHandler({ ResourceNotFoundException.class, UserNotFoundException.class })
     public ResponseEntity<String> handleNotFound(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
