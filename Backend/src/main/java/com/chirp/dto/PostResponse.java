@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class PostResponse {
     private Long id;
     private String content;
+    private String mediaUrl;
     private Long authorId;
     private String authorUsername;
     private LocalDateTime createdAt;
@@ -12,9 +13,10 @@ public class PostResponse {
 
     public PostResponse() {}
 
-    public PostResponse(Long id, String content, Long authorId, String authorUsername, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public PostResponse(Long id, String content, String mediaUrl, Long authorId, String authorUsername, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.content = content;
+        this.mediaUrl = mediaUrl;
         this.authorId = authorId;
         this.authorUsername = authorUsername;
         this.createdAt = createdAt;
@@ -23,6 +25,7 @@ public class PostResponse {
 
     public Long getId() { return id; }
     public String getContent() { return content; }
+    public String getMediaUrl() { return mediaUrl; }
     public Long getAuthorId() { return authorId; }
     public String getAuthorUsername() { return authorUsername; }
     public LocalDateTime getCreatedAt() { return createdAt; }
@@ -30,6 +33,7 @@ public class PostResponse {
 
     public void setId(Long id) { this.id = id; }
     public void setContent(String content) { this.content = content; }
+    public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
     public void setAuthorId(Long authorId) { this.authorId = authorId; }
     public void setAuthorUsername(String authorUsername) { this.authorUsername = authorUsername; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -43,7 +43,7 @@ public class PostController {
     @Operation(summary = "Create a post")
     public PostResponse createPost(@AuthenticationPrincipal UserDetails userDetails, @RequestBody PostRequest request) {
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
-        return postService.createPost(userDetailsImpl.getUser(), request.getContent());
+        return postService.createPost(userDetailsImpl.getUser(), request.getContent(), request.getMediaUrl());
     }
 
     @PutMapping("/{postId}")

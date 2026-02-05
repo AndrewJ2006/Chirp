@@ -1,25 +1,33 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getFeed, createPost, PostResponse } from "@api/PostApi";
 import { addLike, removeLike, getLikeStatus } from "@api/LikeApi";
 import { getCommentsByPost, addComment, CommentResponse } from "@api/CommentApi";
 import { getUserProfile, getCurrentUser } from "@api/UserApi";
+import { addBookmark, removeBookmark, isBookmarked } from "@api/BookmarkApi";
 import logo from "../assets/chirp.svg";
 
 interface PostWithEngagement extends PostResponse {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
+  isBookmarked: boolean;
 }
 
 export default function FeedPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [posts, setPosts] = useState<PostWithEngagement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newPostContent, setNewPostContent] = useState("");
   const [postingInProgress, setPostingInProgress] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showCompose, setShowCompose] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [feedMediaFile, setFeedMediaFile] = useState<File | null>(null);
+  const [feedMediaPreview, setFeedMediaPreview] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: number; username: string } | null>(null);
   const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, CommentResponse[]>>({});
@@ -34,22 +42,25 @@ export default function FeedPage() {
       const postsWithEngagement = await Promise.all(
         feedPosts.map(async (post) => {
           try {
-            const [likeStatus, comments] = await Promise.all([
+            const [likeStatus, comments, bookmarkStatus] = await Promise.all([
               getLikeStatus(post.id),
-              getCommentsByPost(post.id)
+              getCommentsByPost(post.id),
+              isBookmarked(post.id)
             ]);
             return {
               ...post,
               likeCount: likeStatus.likeCount || 0,
               commentCount: comments.length || 0,
-              isLiked: likeStatus.likedByCurrentUser || false
+              isLiked: likeStatus.likedByCurrentUser || false,
+              isBookmarked: bookmarkStatus || false
             };
           } catch {
             return {
               ...post,
               likeCount: 0,
               commentCount: 0,
-              isLiked: false
+              isLiked: false,
+              isBookmarked: false
             };
           }
         })
@@ -91,13 +102,33 @@ export default function FeedPage() {
       });
   }, []);
 
+  useEffect(() => {
+    const state = location.state as { openCompose?: boolean } | null;
+    if (state?.openCompose) {
+      setShowCompose(true);
+      navigate("/feed", { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
+
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
 
     try {
       setPostingInProgress(true);
-      await createPost({ content: newPostContent });
+      
+      let mediaData: string | undefined = undefined;
+      if (feedMediaFile) {
+        const reader = new FileReader();
+        mediaData = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(feedMediaFile);
+        });
+      }
+      
+      await createPost({ content: newPostContent, mediaUrl: mediaData });
       setNewPostContent("");
+      setFeedMediaFile(null);
+      setFeedMediaPreview(null);
       await loadFeed();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create post";
@@ -126,6 +157,27 @@ export default function FeedPage() {
       ));
     } catch (err) {
       console.error("Failed to toggle like:", err);
+    }
+  };
+
+  const handleBookmarkToggle = async (postId: number, currentlyBookmarked: boolean) => {
+    try {
+      console.log('Toggling bookmark for post:', postId, 'Currently bookmarked:', currentlyBookmarked);
+      if (currentlyBookmarked) {
+        await removeBookmark(postId);
+        console.log('Bookmark removed successfully');
+      } else {
+        await addBookmark(postId);
+        console.log('Bookmark added successfully');
+      }
+
+      setPosts(posts.map(post => 
+        post.id === postId 
+          ? { ...post, isBookmarked: !currentlyBookmarked }
+          : post
+      ));
+    } catch (err) {
+      console.error("Failed to toggle bookmark:", err);
     }
   };
 
@@ -192,6 +244,41 @@ export default function FeedPage() {
     return "just now";
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setMediaUrl(base64String);
+        setMediaPreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeMedia = () => {
+    setMediaUrl("");
+    setMediaPreview(null);
+  };
+
+  const handleFeedMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setFeedMediaFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFeedMediaPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeFeedMedia = () => {
+    setFeedMediaFile(null);
+    setFeedMediaPreview(null);
+  };
+
   return (
     <div className="feed-container">
       {/* Left Sidebar */}
@@ -206,7 +293,7 @@ export default function FeedPage() {
             <span></span>
             <span>Explore</span>
           </button>
-          <button className="nav-item">
+          <button className="nav-item" onClick={() => navigate("/notifications")}>
             <span></span>
             <span>Notifications</span>
           </button>
@@ -214,7 +301,7 @@ export default function FeedPage() {
             <span></span>
             <span>Chat</span>
           </button>
-          <button className="nav-item">
+          <button className="nav-item" onClick={() => navigate("/bookmarks")}>
             <span></span>
             <span>Bookmarks</span>
           </button>
@@ -223,7 +310,7 @@ export default function FeedPage() {
             <span>Profile</span>
           </button>
         </nav>
-        <button className="sidebar-compose">Chirp</button>
+        <button className="sidebar-compose" onClick={() => setShowCompose(true)}>Chirp</button>
         <div className="sidebar-user">
           {currentUser && (
             <button 
@@ -273,8 +360,30 @@ export default function FeedPage() {
               rows={3}
               maxLength={280}
             />
+            {feedMediaPreview && (
+              <div className="feed-media-preview">
+                <button className="remove-media" onClick={removeFeedMedia}>✕</button>
+                <img src={feedMediaPreview} alt="Preview" />
+              </div>
+            )}
             <div className="new-post-footer">
-              <span className="char-count">{newPostContent.length}/280</span>
+              <div className="new-post-actions">
+                <input
+                  type="file"
+                  id="feed-media-input"
+                  accept="image/*"
+                  onChange={handleFeedMediaSelect}
+                  style={{ display: 'none' }}
+                />
+                <label htmlFor="feed-media-input" className="media-upload-button">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                </label>
+                <span className="char-count">{newPostContent.length}/280</span>
+              </div>
               <button 
                 className="post-button" 
                 onClick={handleCreatePost}
@@ -311,9 +420,23 @@ export default function FeedPage() {
                     </div>
                   </div>
                   
-                  <div className="post-content">
+                  <div 
+                    className="post-content"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
                     {post.content}
                   </div>
+
+                  {post.mediaUrl && (
+                    <div 
+                      className="post-media"
+                      onClick={() => navigate(`/post/${post.id}`)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <img src={post.mediaUrl} alt="Post media" />
+                    </div>
+                  )}
 
                   <div className="post-actions">
                     <button 
@@ -334,6 +457,15 @@ export default function FeedPage() {
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                       </svg>
                       <span>{post.commentCount}</span>
+                    </button>
+
+                    <button 
+                      className={`action-button ${post.isBookmarked ? "bookmarked" : ""}`}
+                      onClick={() => handleBookmarkToggle(post.id, post.isBookmarked)}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill={post.isBookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                      </svg>
                     </button>
                   </div>
 
@@ -392,6 +524,67 @@ export default function FeedPage() {
         />
         
       </aside>
+
+      {/* Compose Modal */}
+      {showCompose && (
+        <div className="modal-overlay" onClick={() => setShowCompose(false)}>
+          <div className="compose-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <button 
+                className="modal-close"
+                onClick={() => setShowCompose(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="compose-container">
+              <div className="compose-avatar">{currentUser?.username[0].toUpperCase()}</div>
+              <div className="compose-content">
+                <textarea
+                  className="compose-input"
+                  placeholder="What's happening?!"
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  rows={4}
+                />
+                {mediaPreview && (
+                  <div className="media-preview">
+                    <button className="remove-media" onClick={removeMedia}>✕</button>
+                    <img src={mediaPreview} alt="Preview" />
+                  </div>
+                )}
+                <div className="compose-footer">
+                  <div className="compose-actions">
+                    <label className="media-upload-button" title="Add image">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
+                  <button
+                    className="compose-button"
+                    onClick={() => {
+                      handleCreatePost();
+                      setShowCompose(false);
+                    }}
+                    disabled={!newPostContent.trim() || postingInProgress}
+                  >
+                    {postingInProgress ? "Posting..." : "Post"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

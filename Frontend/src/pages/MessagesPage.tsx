@@ -17,6 +17,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(false);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"all" | "requests">("all");
 
   useEffect(() => {
     getCurrentUser()
@@ -119,6 +120,16 @@ export default function MessagesPage() {
     navigate("/login");
   };
 
+  const getTabStyle = (tab: "all" | "requests") => ({
+    padding: "6px 12px",
+    borderRadius: "999px",
+    border: "1px solid #2f3336",
+    background: activeTab === tab ? "#e7e9ea" : "transparent",
+    color: activeTab === tab ? "#000" : "#e7e9ea",
+    fontSize: "12px",
+    fontWeight: 600
+  });
+
   return (
     <div className="feed-container">
       {/* Left Sidebar */}
@@ -133,7 +144,7 @@ export default function MessagesPage() {
             <span></span>
             <span>Explore</span>
           </button>
-          <button className="nav-item">
+          <button className="nav-item" onClick={() => navigate("/notifications")}>
             <span></span>
             <span>Notifications</span>
           </button>
@@ -141,7 +152,7 @@ export default function MessagesPage() {
             <span></span>
             <span>Chat</span>
           </button>
-          <button className="nav-item">
+          <button className="nav-item" onClick={() => navigate("/bookmarks")}>
             <span></span>
             <span>Bookmarks</span>
           </button>
@@ -150,7 +161,9 @@ export default function MessagesPage() {
             <span>Profile</span>
           </button>
         </nav>
-        <button className="sidebar-compose">Chirp</button>
+        <button className="sidebar-compose" onClick={() => navigate("/feed", { state: { openCompose: true } })}>
+          Chirp
+        </button>
         <div className="sidebar-user">
           <button 
             className="user-button"
@@ -237,35 +250,23 @@ export default function MessagesPage() {
             >
               <button
                 type="button"
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: "999px",
-                  border: "1px solid #2f3336",
-                  background: "#e7e9ea",
-                  color: "#000",
-                  fontSize: "12px",
-                  fontWeight: 600
-                }}
+                onClick={() => setActiveTab("all")}
+                style={getTabStyle("all")}
               >
                 All
               </button>
               <button
                 type="button"
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: "999px",
-                  border: "1px solid #2f3336",
-                  background: "transparent",
-                  color: "#e7e9ea",
-                  fontSize: "12px",
-                  fontWeight: 600
-                }}
+                onClick={() => setActiveTab("requests")}
+                style={getTabStyle("requests")}
               >
                 Requests
               </button>
             </div>
 
-            {loading ? (
+            {activeTab === "requests" ? (
+              <div className="empty-state-small">No message requests yet.</div>
+            ) : loading ? (
               <div className="loading">Searching...</div>
             ) : loadingRecent && recentUsers.length === 0 ? (
               <div className="loading">Loading conversations...</div>

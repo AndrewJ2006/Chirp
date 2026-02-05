@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: chirp-db
+    environment:
+      POSTGRES_DB: chirp
+      POSTGRES_USER: chirp
+      POSTGRES_PASSWORD: chirp
+    volumes:
+      - chirp_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Docker/backend.Dockerfile
+    container_name: chirp-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/chirp
+      SPRING_DATASOURCE_USERNAME: chirp
+      SPRING_DATASOURCE_PASSWORD: chirp
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: Docker/frontend.Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: chirp-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  chirp_db_data:

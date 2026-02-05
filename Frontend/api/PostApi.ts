@@ -2,11 +2,13 @@ import { apiDelete, apiGet, apiPost, apiPut } from "./httpClient";
 
 export interface PostRequest {
 	content: string;
+	mediaUrl?: string;
 }
 
 export interface PostResponse {
 	id: number;
 	content: string;
+	mediaUrl?: string;
 	authorId: number;
 	authorUsername: string;
 	createdAt: string;

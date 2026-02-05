@@ -21,6 +21,8 @@ public class Post {
     Long id;
     @Column(nullable = false, length = 280)
     String content;
+    @Column(length = 10000000)
+    String mediaUrl;
     @ManyToOne(optional = false)
     User author;
 
@@ -41,12 +43,21 @@ public class Post {
         
     }
 
+    public Post(String content, String mediaUrl, User author) {
+        this.content = content;
+        this.mediaUrl = mediaUrl;
+        this.author = author;
+    }
+
 
     public Long getId() { return id; }
     public String getContent() { return content; }
+    public String getMediaUrl() { return mediaUrl; }
     public User getAuthor() { return author; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
 
   
     public void updateContent(String content) {

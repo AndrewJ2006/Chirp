@@ -87,7 +87,7 @@ export default function ExplorePage() {
             <span></span>
             <span>Explore</span>
           </button>
-          <button className="nav-item">
+          <button className="nav-item" onClick={() => navigate("/notifications")}>
             <span></span>
             <span>Notifications</span>
           </button>
@@ -95,7 +95,7 @@ export default function ExplorePage() {
             <span></span>
             <span>Chat</span>
           </button>
-          <button className="nav-item">
+          <button className="nav-item" onClick={() => navigate("/bookmarks")}>
             <span></span>
             <span>Bookmarks</span>
           </button>
@@ -104,7 +104,9 @@ export default function ExplorePage() {
             <span>Profile</span>
           </button>
         </nav>
-        <button className="sidebar-compose">Chirp</button>
+        <button className="sidebar-compose" onClick={() => navigate("/feed", { state: { openCompose: true } })}>
+          Chirp
+        </button>
         <div className="sidebar-user">
           <button 
             className="user-button"

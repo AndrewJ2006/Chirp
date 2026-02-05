@@ -288,7 +288,9 @@ export default function ProfilePage() {
             <span>Profile</span>
           </button>
         </nav>
-        <button className="sidebar-compose">Chirp</button>
+        <button className="sidebar-compose" onClick={() => navigate("/feed", { state: { openCompose: true } })}>
+          Chirp
+        </button>
         <div className="sidebar-user">
           <button 
             className="user-button"
@@ -375,9 +377,23 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   
-                  <div className="post-content">
+                  <div 
+                    className="post-content"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
                     {post.content}
                   </div>
+
+                  {post.mediaUrl && (
+                    <div 
+                      className="post-media"
+                      onClick={() => navigate(`/post/${post.id}`)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <img src={post.mediaUrl} alt="Post media" />
+                    </div>
+                  )}
 
                   <div className="post-actions">
                     <button 

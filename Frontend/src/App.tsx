@@ -5,6 +5,9 @@ import FeedPage from "./pages/FeedPage";
 import ProfilePage from "./pages/ProfilePage";
 import ExplorePage from "./pages/ExplorePage";
 import MessagesPage from "./pages/MessagesPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import BookmarksPage from "./pages/BookmarksPage";
+import PostDetailPage from "./pages/PostDetailPage";
 
 export default function App() {
   return (
@@ -14,7 +17,10 @@ export default function App() {
       <Route path="/feed" element={<FeedPage />} />
       <Route path="/explore" element={<ExplorePage />} />
       <Route path="/messages" element={<MessagesPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
+      <Route path="/bookmarks" element={<BookmarksPage />} />
       <Route path="/profile/:userId" element={<ProfilePage />} />
+      <Route path="/post/:postId" element={<PostDetailPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
