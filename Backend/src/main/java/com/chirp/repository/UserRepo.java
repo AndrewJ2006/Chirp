@@ -11,6 +11,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
       Optional<User> findByUsername(String username);
       Optional<User> findByEmail(String email);
       Optional<User> findById(Long Id);
+      Optional<User> findByOauthProviderAndOauthProviderId(String oauthProvider, String oauthProviderId);
       
       @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))")
       List<User> searchUsers(@Param("query") String query);
