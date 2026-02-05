@@ -94,6 +94,7 @@ public class CommentService {
 			comment.getPost().getId(),
 			comment.getAuthor().getId(),
 			comment.getAuthor().getUsername(),
+			comment.getAuthor().getProfilePictureUrl(),
 			comment.getContent(),
 			comment.getCreatedAt(),
 			comment.getUpdatedAt()

@@ -27,6 +27,12 @@ import jakarta.persistence.Table;
         @Column(name = "is_private")
         private boolean isPrivate = false;
 
+        @Column(name = "bio", columnDefinition = "TEXT")
+        private String bio;
+
+        @Column(name = "profile_picture_url", columnDefinition = "TEXT")
+        private String profilePictureUrl;
+
         @Column(name = "oauth_provider", length = 50)
         private String oauthProvider;  // "google", "apple", or null
 
@@ -92,6 +98,22 @@ import jakarta.persistence.Table;
 
         public void setPrivate(boolean isPrivate) {
             this.isPrivate = isPrivate;
+        }
+
+        public String getBio() {
+            return bio;
+        }
+
+        public void setBio(String bio) {
+            this.bio = bio;
+        }
+
+        public String getProfilePictureUrl() {
+            return profilePictureUrl;
+        }
+
+        public void setProfilePictureUrl(String profilePictureUrl) {
+            this.profilePictureUrl = profilePictureUrl;
         }
 
         public String getOauthProvider() {

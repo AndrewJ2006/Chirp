@@ -29,7 +29,7 @@ public PostResponse createPost(User author, String content, String mediaUrl) {
     Post post = new Post(content, mediaUrl, author);
     postRepo.save(post);
 
-    PostResponse response = new PostResponse(post.getId(), post.getContent(), post.getMediaUrl(), post.getAuthor().getId(), post.getAuthor().getUsername(), post.getCreatedAt(), post.getUpdatedAt());
+    PostResponse response = new PostResponse(post.getId(), post.getContent(), post.getMediaUrl(), post.getAuthor().getId(), post.getAuthor().getUsername(), post.getAuthor().getProfilePictureUrl(), post.getCreatedAt(), post.getUpdatedAt());
     return response;
 }
 
@@ -53,6 +53,7 @@ public PostResponse updatePost(User author, Long postId, String newContent) {
         post.getMediaUrl(),
         post.getAuthor().getId(),
         post.getAuthor().getUsername(),
+        post.getAuthor().getProfilePictureUrl(),
         post.getCreatedAt(),
         post.getUpdatedAt()
     );
@@ -87,6 +88,7 @@ public PostResponse getPost(Long postId) {
             post.getMediaUrl(),
             post.getAuthor().getId(),
             post.getAuthor().getUsername(),
+            post.getAuthor().getProfilePictureUrl(),
             post.getCreatedAt(),
             post.getUpdatedAt()
         );
@@ -101,6 +103,7 @@ public List<PostResponse> getPostsByUser(User author) {
                                         post.getMediaUrl(),
                                         post.getAuthor().getId(),
                                         post.getAuthor().getUsername(),
+                                        post.getAuthor().getProfilePictureUrl(),
                                         post.getCreatedAt(),
                                         post.getUpdatedAt()
                                 ))
@@ -118,6 +121,7 @@ public List<PostResponse> getFeed(User currentUser) {
                                         post.getMediaUrl(),
                                         post.getAuthor().getId(),
                                         post.getAuthor().getUsername(),
+                                        post.getAuthor().getProfilePictureUrl(),
                                         post.getCreatedAt(),
                                         post.getUpdatedAt()
                                 ))
@@ -147,6 +151,7 @@ public List<PostResponse> getFeed(User currentUser, int page, int size) {
                         post.getMediaUrl(),
                         post.getAuthor().getId(),
                         post.getAuthor().getUsername(),
+                        post.getAuthor().getProfilePictureUrl(),
                         post.getCreatedAt(),
                         post.getUpdatedAt()
                    ))

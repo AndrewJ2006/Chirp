@@ -9,6 +9,7 @@ export interface CommentResponse {
 	postId: number;
 	authorId: number;
 	authorUsername: string;
+	authorProfilePictureUrl?: string;
 	content: string;
 	createdAt: string;
 	updatedAt: string;

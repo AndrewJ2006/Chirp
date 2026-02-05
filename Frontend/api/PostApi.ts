@@ -11,6 +11,7 @@ export interface PostResponse {
 	mediaUrl?: string;
 	authorId: number;
 	authorUsername: string;
+	authorProfilePictureUrl?: string;
 	createdAt: string;
 	updatedAt: string;
 }

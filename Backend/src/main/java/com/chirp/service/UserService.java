@@ -102,6 +102,8 @@ private final JwtService jwtService;
     profile.setUsername(user2.getUsername());
     profile.setCreatedAt(user2.getCreatedAt());
     profile.setId(user2.getId());
+    profile.setBio(user2.getBio());
+    profile.setProfilePictureUrl(user2.getProfilePictureUrl());
 
     return profile;
    
@@ -147,9 +149,47 @@ private final JwtService jwtService;
                 profile.setUsername(user.getUsername());
                 profile.setEmail(user.getEmail());
                 profile.setCreatedAt(user.getCreatedAt());
+                profile.setBio(user.getBio());
+                profile.setProfilePictureUrl(user.getProfilePictureUrl());
                 return profile;
             })
             .collect(Collectors.toList());
+    }
+
+    public ProfileRequest updateUserProfile(Long userId, ProfileRequest request) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        
+        User user = userOpt.get();
+        
+        // Update email if provided
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            user.setEmail(request.getEmail());
+        }
+        
+        // Update bio if provided
+        if (request.getBio() != null) {
+            user.setBio(request.getBio());
+        }
+        
+        // Update profile picture if provided
+        if (request.getProfilePictureUrl() != null) {
+            user.setProfilePictureUrl(request.getProfilePictureUrl());
+        }
+        
+        userRepository.save(user);
+        
+        ProfileRequest profile = new ProfileRequest();
+        profile.setId(user.getId());
+        profile.setUsername(user.getUsername());
+        profile.setEmail(user.getEmail());
+        profile.setCreatedAt(user.getCreatedAt());
+        profile.setBio(user.getBio());
+        profile.setProfilePictureUrl(user.getProfilePictureUrl());
+        return profile;
     }
 
 

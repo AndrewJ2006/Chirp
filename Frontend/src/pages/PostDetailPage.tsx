@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getPost, PostResponse } from "@api/PostApi";
 import { addLike, removeLike, getLikeStatus } from "@api/LikeApi";
 import { getCommentsByPost, addComment, CommentResponse } from "@api/CommentApi";
-import { getCurrentUser } from "@api/UserApi";
+import { getCurrentUser, UserProfile } from "@api/UserApi";
 import logo from "../assets/chirp.svg";
 
 interface PostWithEngagement extends PostResponse {
@@ -20,7 +20,7 @@ export default function PostDetailPage() {
   const [newCommentContent, setNewCommentContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ id: number; username: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   const loadPost = async () => {
     if (!postId) return;
@@ -59,7 +59,7 @@ export default function PostDetailPage() {
 
     getCurrentUser()
       .then(user => {
-        setCurrentUser({ id: user.id, username: user.username });
+        setCurrentUser(user);
       })
       .catch(err => {
         console.error("Failed to fetch current user", err);
@@ -68,6 +68,19 @@ export default function PostDetailPage() {
 
     loadPost();
   }, [postId]);
+
+  useEffect(() => {
+    // Listen for profile updates
+    const handleProfileUpdate = (event: Event) => {
+      if (event instanceof CustomEvent) {
+        const updatedUser = event.detail;
+        setCurrentUser(updatedUser);
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
 
   const handleLikeToggle = async (currentlyLiked: boolean) => {
     if (!post) return;
@@ -206,7 +219,15 @@ export default function PostDetailPage() {
                 onClick={() => handleNavigateToProfile(post.authorId)}
                 style={{ cursor: "pointer" }}
               >
-                <div className="avatar">{post.authorUsername[0].toUpperCase()}</div>
+                <div className="avatar">
+                  {currentUser && currentUser.id === post.authorId && currentUser.profilePictureUrl ? (
+                    <img src={currentUser.profilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : post.authorProfilePictureUrl ? (
+                    <img src={post.authorProfilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                    post.authorUsername[0].toUpperCase()
+                  )}
+                </div>
                 <div className="author-info">
                   <span className="author-name">{post.authorUsername}</span>
                   <span className="post-time">{formatTimestamp(post.createdAt)}</span>
@@ -246,7 +267,13 @@ export default function PostDetailPage() {
 
           {/* Add Comment */}
           <div className="add-comment-box">
-            <div className="comment-avatar">{currentUser?.username[0].toUpperCase()}</div>
+            <div className="comment-avatar">
+              {currentUser?.profilePictureUrl ? (
+                <img src={currentUser.profilePictureUrl} alt={currentUser.username} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                currentUser?.username[0].toUpperCase()
+              )}
+            </div>
             <div className="comment-input-wrapper">
               <textarea
                 className="comment-textarea"
@@ -277,7 +304,11 @@ export default function PostDetailPage() {
                     onClick={() => handleNavigateToProfile(comment.authorId)}
                     style={{ cursor: "pointer" }}
                   >
-                    {comment.authorUsername[0].toUpperCase()}
+                    {currentUser && currentUser.id === comment.authorId && currentUser.profilePictureUrl ? (
+                      <img src={currentUser.profilePictureUrl} alt={comment.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      comment.authorUsername[0].toUpperCase()
+                    )}
                   </div>
                   <div className="comment-body">
                     <div className="comment-header">

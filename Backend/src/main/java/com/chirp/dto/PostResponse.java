@@ -8,17 +8,19 @@ public class PostResponse {
     private String mediaUrl;
     private Long authorId;
     private String authorUsername;
+    private String authorProfilePictureUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public PostResponse() {}
 
-    public PostResponse(Long id, String content, String mediaUrl, Long authorId, String authorUsername, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public PostResponse(Long id, String content, String mediaUrl, Long authorId, String authorUsername, String authorProfilePictureUrl, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.content = content;
         this.mediaUrl = mediaUrl;
         this.authorId = authorId;
         this.authorUsername = authorUsername;
+        this.authorProfilePictureUrl = authorProfilePictureUrl;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -28,6 +30,7 @@ public class PostResponse {
     public String getMediaUrl() { return mediaUrl; }
     public Long getAuthorId() { return authorId; }
     public String getAuthorUsername() { return authorUsername; }
+    public String getAuthorProfilePictureUrl() { return authorProfilePictureUrl; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -36,6 +39,7 @@ public class PostResponse {
     public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
     public void setAuthorId(Long authorId) { this.authorId = authorId; }
     public void setAuthorUsername(String authorUsername) { this.authorUsername = authorUsername; }
+    public void setAuthorProfilePictureUrl(String authorProfilePictureUrl) { this.authorProfilePictureUrl = authorProfilePictureUrl; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

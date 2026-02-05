@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { searchUsers, UserProfile, followUser, unfollowUser, isFollowing, getCurrentUser } from "@api/UserApi";
 import logo from "../assets/chirp.svg";
@@ -12,9 +12,19 @@ export default function ExplorePage() {
   const [followStatus, setFollowStatus] = useState<Record<number, boolean>>({});
   const [followLoading, setFollowLoading] = useState<Record<number, boolean>>({});
 
-  useState(() => {
+  useEffect(() => {
     getCurrentUser().then(setCurrentUser).catch(console.error);
-  });
+
+    // Listen for profile updates
+    const handleProfileUpdate = (event: Event) => {
+      if (event instanceof CustomEvent) {
+        setCurrentUser(event.detail);
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -155,7 +165,13 @@ export default function ExplorePage() {
                     onClick={() => navigate(`/profile/${user.id}`)}
                     style={{ cursor: "pointer", flex: 1 }}
                   >
-                    <div className="user-avatar-large">{user.username[0].toUpperCase()}</div>
+                    <div className="user-avatar-large">
+                      {user.profilePictureUrl ? (
+                        <img src={user.profilePictureUrl} alt={user.username} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        user.username[0].toUpperCase()
+                      )}
+                    </div>
                     <div className="user-details">
                       <h3 className="user-name">{user.username}</h3>
                       <p className="user-email">{user.email}</p>

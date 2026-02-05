@@ -1,10 +1,12 @@
-import { apiGet, apiPost, apiDelete } from "./httpClient";
+import { apiGet, apiPost, apiDelete, apiPut } from "./httpClient";
 
 export interface UserProfile {
   id: number;
   username: string;
   email: string;
   createdAt?: string;
+  bio?: string;
+  profilePictureUrl?: string;
 }
 
 export interface Follower {
@@ -22,6 +24,9 @@ export const getUserProfile = (userId: number) =>
 
 export const getCurrentUser = () =>
   apiGet<UserProfile>(`/users/me`);
+
+export const updateProfile = (profile: Partial<UserProfile>) =>
+  apiPut<UserProfile>(`/users/profile`, profile);
 
 export const getFollowers = (userId: number) =>
   apiGet<Follower[]>(`/relationships/followers/${userId}`);

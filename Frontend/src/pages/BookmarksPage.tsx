@@ -24,6 +24,19 @@ export default function BookmarksPage() {
     getCurrentUser()
       .then(setCurrentUser)
       .catch(console.error);
+
+    // Listen for profile updates
+    const handleProfileUpdate = (event: Event) => {
+      if (event instanceof CustomEvent) {
+        console.log('BookmarksPage received profile update:', event.detail);
+        setCurrentUser(event.detail);
+        // Reload bookmarks to get updated profile pictures
+        loadBookmarks();
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
   }, []);
 
   useEffect(() => {
@@ -182,7 +195,15 @@ export default function BookmarksPage() {
                     onClick={() => navigate(`/profile/${post.authorId}`)}
                     style={{ cursor: "pointer" }}
                   >
-                    <div className="avatar">{post.authorUsername[0].toUpperCase()}</div>
+                    <div className="avatar">
+                      {currentUser && currentUser.id === post.authorId && currentUser.profilePictureUrl ? (
+                        <img src={currentUser.profilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : post.authorProfilePictureUrl ? (
+                        <img src={post.authorProfilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        post.authorUsername[0].toUpperCase()
+                      )}
+                    </div>
                     <div className="author-info">
                       <span className="author-name">{post.authorUsername}</span>
                       <span className="post-time">{formatDate(post.createdAt)}</span>

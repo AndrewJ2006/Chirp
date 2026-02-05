@@ -8,17 +8,19 @@ import java.time.LocalDateTime;
     private Long postId;
     private Long authorId;
     private String authorUsername;
+    private String authorProfilePictureUrl;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public CommentResponse() {}
 
-    public CommentResponse(Long id, Long postId, Long authorId, String authorUsername, String content, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public CommentResponse(Long id, Long postId, Long authorId, String authorUsername, String authorProfilePictureUrl, String content, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.postId = postId;
         this.authorId = authorId;
         this.authorUsername = authorUsername;
+        this.authorProfilePictureUrl = authorProfilePictureUrl;
         this.content = content;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -38,6 +40,10 @@ import java.time.LocalDateTime;
 
     public String getAuthorUsername() {
         return authorUsername;
+    }
+
+    public String getAuthorProfilePictureUrl() {
+        return authorProfilePictureUrl;
     }
 
     public String getContent() {

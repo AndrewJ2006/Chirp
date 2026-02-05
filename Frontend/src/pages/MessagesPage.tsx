@@ -281,7 +281,13 @@ export default function MessagesPage() {
                     style={{ width: "100%" }}
                   >
                     <div className="user-info-section">
-                      <div className="user-avatar-large">{user.username[0].toUpperCase()}</div>
+                      <div className="user-avatar-large">
+                        {user.profilePictureUrl ? (
+                          <img src={user.profilePictureUrl} alt={user.username} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          user.username[0].toUpperCase()
+                        )}
+                      </div>
                       <div className="user-details">
                         <h3 className="user-name">{user.username}</h3>
                         <p className="user-email">{user.email}</p>
@@ -302,7 +308,13 @@ export default function MessagesPage() {
                     style={{ width: "100%" }}
                   >
                     <div className="user-info-section">
-                      <div className="user-avatar-large">{user.username[0].toUpperCase()}</div>
+                      <div className="user-avatar-large">
+                        {user.profilePictureUrl ? (
+                          <img src={user.profilePictureUrl} alt={user.username} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          user.username[0].toUpperCase()
+                        )}
+                      </div>
                       <div className="user-details">
                         <h3 className="user-name">{user.username}</h3>
                         <p className="user-email">{user.email}</p>
@@ -320,7 +332,13 @@ export default function MessagesPage() {
             {selectedUser ? (
               <>
                 <div className="messages-header">
-                  <div className="user-avatar-large">{selectedUser.username[0].toUpperCase()}</div>
+                  <div className="user-avatar-large">
+                    {selectedUser.profilePictureUrl ? (
+                      <img src={selectedUser.profilePictureUrl} alt={selectedUser.username} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      selectedUser.username[0].toUpperCase()
+                    )}
+                  </div>
                   <div>
                     <h3 className="user-name">{selectedUser.username}</h3>
                     <p className="user-email">{selectedUser.email}</p>

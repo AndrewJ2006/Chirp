@@ -28,7 +28,7 @@ export default function FeedPage() {
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [feedMediaFile, setFeedMediaFile] = useState<File | null>(null);
   const [feedMediaPreview, setFeedMediaPreview] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ id: number; username: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, CommentResponse[]>>({});
   const [newCommentContent, setNewCommentContent] = useState<Record<number, string>>({});
@@ -91,15 +91,54 @@ export default function FeedPage() {
     
     loadFeed();
     
-    // Fetch current user from /users/me endpoint
+    // Try to get current user from localStorage first (updated profile data)
+    const cachedUser = localStorage.getItem("currentUserData");
+    if (cachedUser) {
+      try {
+        const user = JSON.parse(cachedUser);
+        setCurrentUser({ id: user.id, username: user.username });
+        return;
+      } catch (e) {
+        console.error("Failed to parse cached user data");
+      }
+    }
+    
+    // Fetch current user from /users/me endpoint if not cached
     getCurrentUser()
       .then(user => {
-        setCurrentUser({ id: user.id, username: user.username });
+        setCurrentUser(user);
       })
       .catch(err => {
         console.error("Failed to fetch current user", err);
         navigate("/login");
       });
+    
+    // Listen for storage changes from other tabs/windows
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "currentUserData" && e.newValue) {
+        try {
+          const user = JSON.parse(e.newValue);
+          setCurrentUser({ id: user.id, username: user.username });
+        } catch (error) {
+          console.error("Failed to parse updated user data");
+        }
+      }
+    };
+    
+    // Listen for profile updates from same window
+    const handleProfileUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setCurrentUser(customEvent.detail);
+      // Reload feed to get updated profile pictures
+      loadFeed();
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -412,7 +451,15 @@ export default function FeedPage() {
                       onClick={() => handleNavigateToProfile(post.authorId)}
                       style={{ cursor: "pointer" }}
                     >
-                      <div className="avatar">{post.authorUsername[0].toUpperCase()}</div>
+                      <div className="avatar">
+                        {currentUser && currentUser.id === post.authorId && currentUser.profilePictureUrl ? (
+                          <img src={currentUser.profilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : post.authorProfilePictureUrl ? (
+                          <img src={post.authorProfilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          post.authorUsername[0].toUpperCase()
+                        )}
+                      </div>
                       <div className="author-info">
                         <span className="author-name">{post.authorUsername}</span>
                         <span className="post-time">{formatTimestamp(post.createdAt)}</span>
@@ -495,7 +542,15 @@ export default function FeedPage() {
                       <div className="comments-list">
                         {comments[post.id]?.map((comment) => (
                           <div key={comment.id} className="comment">
-                            <div className="comment-avatar">{comment.authorUsername[0].toUpperCase()}</div>
+                            <div className="comment-avatar">
+                              {currentUser && currentUser.id === comment.authorId && currentUser.profilePictureUrl ? (
+                                <img src={currentUser.profilePictureUrl} alt={comment.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : comment.authorProfilePictureUrl ? (
+                                <img src={comment.authorProfilePictureUrl} alt={comment.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                comment.authorUsername[0].toUpperCase()
+                              )}
+                            </div>
                             <div className="comment-content">
                               <div className="comment-header">
                                 <span className="comment-author">{comment.authorUsername}</span>

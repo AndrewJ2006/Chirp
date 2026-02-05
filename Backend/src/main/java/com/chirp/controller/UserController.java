@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -72,5 +73,13 @@ public class UserController {
         @Operation(summary = "Search for users by username or email")
         public List<ProfileRequest> searchUsers(@RequestParam String query) {
              return userService.searchUsers(query);
+        }
+
+        @PutMapping("/profile")
+        @Operation(summary = "Update current user's profile")
+        public Map<String, Object> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody ProfileRequest request) {
+             User user = userService.findByUsername(userDetails.getUsername());
+             ProfileRequest updated = userService.updateUserProfile(user.getId(), request);
+             return Map.of("message", "Profile updated successfully", "profile", updated);
         }
 }

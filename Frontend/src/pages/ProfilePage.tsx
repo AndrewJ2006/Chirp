@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getUserProfile, getFollowers, getFollowing, isFollowing, followUser, unfollowUser, getCurrentUser, UserProfile, Follower, Following } from "@api/UserApi";
+import { getUserProfile, getFollowers, getFollowing, isFollowing, followUser, unfollowUser, getCurrentUser, updateProfile, UserProfile, Follower, Following } from "@api/UserApi";
 import { getPostsByUser, PostResponse } from "@api/PostApi";
 import { addLike, removeLike, getLikeStatus } from "@api/LikeApi";
 import { getCommentsByPost, addComment, CommentResponse } from "@api/CommentApi";
@@ -27,6 +27,11 @@ export default function ProfilePage() {
   const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, CommentResponse[]>>({});
   const [newCommentContent, setNewCommentContent] = useState<Record<number, string>>({});
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editEmail, setEditEmail] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [editProfilePicture, setEditProfilePicture] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
 
   const loadProfile = async () => {
     if (!userId) return;
@@ -100,6 +105,72 @@ export default function ProfilePage() {
     loadCurrentUser();
     loadProfile();
   }, [userId]);
+
+  const handleEditProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    try {
+      setEditLoading(true);
+      await updateProfile({
+        id: currentUser.id,
+        username: currentUser.username,
+        email: editEmail,
+        bio: editBio,
+        profilePictureUrl: editProfilePicture
+      });
+      
+      // Refresh profile data from server
+      if (userId) {
+        const updatedProfile = await getUserProfile(parseInt(userId));
+        setProfile(updatedProfile);
+        setCurrentUser(updatedProfile);
+        
+        // Store updated user info in localStorage so other pages see the changes
+        localStorage.setItem('currentUserData', JSON.stringify(updatedProfile));
+        
+        // Dispatch custom event to notify other components
+        console.log('ProfilePage dispatching profileUpdated event:', updatedProfile);
+        window.dispatchEvent(new CustomEvent('profileUpdated', { detail: updatedProfile }));
+        
+        // Refresh posts if viewing own profile to show updated author info
+        if (currentUser && currentUser.id === parseInt(userId)) {
+          const updatedPosts = await getPostsByUser(parseInt(userId), 0, 20);
+          const postsWithEngagement = await Promise.all(
+            updatedPosts.map(async (post) => {
+              try {
+                const [likeStatus, postComments] = await Promise.all([
+                  getLikeStatus(post.id),
+                  getCommentsByPost(post.id)
+                ]);
+                return {
+                  ...post,
+                  likeCount: likeStatus.likeCount || 0,
+                  commentCount: postComments.length || 0,
+                  isLiked: likeStatus.likedByCurrentUser || false
+                };
+              } catch {
+                return {
+                  ...post,
+                  likeCount: 0,
+                  commentCount: 0,
+                  isLiked: false
+                };
+              }
+            })
+          );
+          setPosts(postsWithEngagement);
+        }
+      }
+      
+      setShowEditModal(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to update profile";
+      alert(message);
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const handleFollowToggle = async () => {
     if (!profile) return;
@@ -313,11 +384,18 @@ export default function ProfilePage() {
           <button className="back-button" onClick={() => navigate("/feed")}>←</button>
 
           <div className="profile-header-card">
-            <div className="profile-avatar-large">{profile?.username[0].toUpperCase()}</div>
+            <div className="profile-avatar-large">
+              {profile?.profilePictureUrl ? (
+                <img src={profile.profilePictureUrl} alt={profile.username} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+              ) : (
+                profile?.username?.[0]?.toUpperCase()
+              )}
+            </div>
             
             <div className="profile-info">
               <h1 className="profile-username">{profile?.username}</h1>
               <p className="profile-email">{profile?.email}</p>
+              {profile?.bio && <p className="profile-bio">{profile.bio}</p>}
               <p className="profile-joined">Joined {profile?.createdAt ? formatDate(profile.createdAt) : ""}</p>
             </div>
 
@@ -328,6 +406,19 @@ export default function ProfilePage() {
               style={{ display: currentUser && profile && currentUser.id !== profile.id ? "block" : "none" }}
             >
               {followLoading ? "Loading..." : isFollowingUser ? "Unfollow" : "Follow"}
+            </button>
+
+            <button 
+              className="edit-button"
+              onClick={() => {
+                setEditEmail(profile?.email || "");
+                setEditBio(profile?.bio || "");
+                setEditProfilePicture(profile?.profilePictureUrl || "");
+                setShowEditModal(true);
+              }}
+              style={{ display: currentUser && profile && currentUser.id === profile.id ? "block" : "none" }}
+            >
+              Edit Profile
             </button>
           </div>
 
@@ -362,7 +453,13 @@ export default function ProfilePage() {
                         onClick={() => handleNavigateToProfile(post.authorId)}
                         style={{ cursor: "pointer" }}
                       >
-                        {post.authorUsername[0].toUpperCase()}
+                        {currentUser && currentUser.id === post.authorId && currentUser.profilePictureUrl ? (
+                          <img src={currentUser.profilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : post.authorProfilePictureUrl ? (
+                          <img src={post.authorProfilePictureUrl} alt={post.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          post.authorUsername[0].toUpperCase()
+                        )}
                       </div>
                       <div className="author-info">
                         <span 
@@ -443,7 +540,13 @@ export default function ProfilePage() {
                       <div className="comments-list">
                         {comments[post.id]?.map((comment) => (
                           <div key={comment.id} className="comment">
-                            <div className="comment-avatar">{comment.authorUsername[0].toUpperCase()}</div>
+                            <div className="comment-avatar">
+                              {currentUser && currentUser.id === comment.authorId && currentUser.profilePictureUrl ? (
+                                <img src={currentUser.profilePictureUrl} alt={comment.authorUsername} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                comment.authorUsername[0].toUpperCase()
+                              )}
+                            </div>
                             <div className="comment-content">
                               <div className="comment-header">
                                 <span className="comment-author">{comment.authorUsername}</span>
@@ -461,6 +564,119 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Profile</h2>
+              <button 
+                className="close-button" 
+                onClick={() => setShowEditModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditProfile}>
+              <div className="form-group">
+                <label>Username</label>
+                <input 
+                  type="text" 
+                  value={profile?.username || ""} 
+                  disabled
+                  style={{ opacity: 0.6 }}
+                />
+                <p className="help-text">Username cannot be changed</p>
+              </div>
+
+              <div className="form-group">
+                <label>Email</label>
+                <input 
+                  type="email" 
+                  value={editEmail} 
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Profile Picture</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        setEditProfilePicture(event.target?.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: "4px",
+                    border: "1px solid #2f3336",
+                    fontSize: "15px",
+                    backgroundColor: "#16181c",
+                    color: "#e7e9ea",
+                    cursor: "pointer"
+                  }}
+                />
+                {editProfilePicture && (
+                  <div style={{ marginTop: "12px" }}>
+                    <img 
+                      src={editProfilePicture} 
+                      alt="Preview" 
+                      style={{ maxWidth: "100px", maxHeight: "100px", borderRadius: "4px" }} 
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Bio</label>
+                <textarea 
+                  value={editBio} 
+                  onChange={(e) => setEditBio(e.target.value)}
+                  placeholder="Tell us about yourself"
+                  rows={4}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: "4px",
+                    border: "1px solid #2f3336",
+                    fontSize: "15px",
+                    backgroundColor: "#16181c",
+                    color: "#e7e9ea",
+                    fontFamily: "inherit",
+                    resize: "vertical"
+                  }}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button 
+                  type="button" 
+                  className="cancel-button"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="save-button"
+                  disabled={editLoading}
+                >
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       </main>
 
       {/* Right Sidebar */}
