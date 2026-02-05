@@ -1,8 +1,11 @@
 import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { loginUser } from "@api/AuthApi";
 import logo from "../assets/chirp.svg";
+import OAuthButton from "../components/OAuthButton";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,6 +21,7 @@ export default function LoginPage() {
     try {
       const response = await loginUser({ username, password });
       setSuccess(response.message || "Logged in successfully");
+      setTimeout(() => navigate("/feed"), 1000);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);
@@ -32,6 +36,15 @@ export default function LoginPage() {
         <img className="login-logo" src={logo} alt="Chirp logo" />
         <h1>Welcome back</h1>
         <p className="subtitle">Log in to your Chirp account</p>
+
+        <div className="oauth-section">
+          <OAuthButton provider="google" onClick={() => console.log("Google login")} />
+          <OAuthButton provider="apple" onClick={() => console.log("Apple login")} />
+        </div>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
 
         <form className="login-form" onSubmit={onSubmit}>
           <label>
@@ -68,7 +81,7 @@ export default function LoginPage() {
 
         <div className="login-footer">
           <span>Don't have an account?</span>
-          <button type="button" className="link-button" disabled>
+          <button type="button" className="link-button" onClick={() => navigate("/register")}>
             Sign up
           </button>
         </div>

@@ -3,13 +3,16 @@ package com.chirp.controller;
 import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chirp.config.UserDetailsImpl;
 import com.chirp.dto.Follower;
 import com.chirp.dto.Following;
 import com.chirp.model.User;
@@ -36,50 +39,55 @@ public class RelController {
     }
     @PostMapping("/follow")
     @Operation(summary = "Follow a user")
-    public Following followUser(@AuthenticationPrincipal User requester,@RequestParam Long followingId) {
+    public Following followUser(@AuthenticationPrincipal UserDetails userDetails,@RequestParam Long followingId) {
 
         User following = userService.findById(followingId)
             .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
-        return relService.followUser(requester, following);
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return relService.followUser(userDetailsImpl.getUser(), following);
     }
 
 
-    @PostMapping("/unfollow")
+    @DeleteMapping("/unfollow")
     @Operation(summary = "Unfollow a user")
-    public Following unfollowUser(@AuthenticationPrincipal User requester, @RequestParam Long followingId) {
+    public void unfollowUser(@AuthenticationPrincipal UserDetails userDetails, @RequestParam Long followingId) {
 
         User following = userService.findById(followingId)
             .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
-        return relService.unfollowUser(requester, following);
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        relService.unfollowUser(userDetailsImpl.getUser(), following);
     }
 
 
     @GetMapping("/followers/{userId}")
     @Operation(summary = "Get followers of a user")
-    public List<Follower> getFollowers(@PathVariable Long userId, @AuthenticationPrincipal User requester) {
+    public List<Follower> getFollowers(@PathVariable Long userId, @AuthenticationPrincipal UserDetails userDetails) {
 
-        return relService.getFollowers(userId, requester);
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return relService.getFollowers(userId, userDetailsImpl.getUser());
     }
 
 
     @GetMapping("/following/{userId}")
     @Operation(summary = "Get following list for a user")
-    public List<Following> getFollowing(@PathVariable Long userId, @AuthenticationPrincipal User requester) {
+    public List<Following> getFollowing(@PathVariable Long userId, @AuthenticationPrincipal UserDetails userDetails) {
 
-        return relService.getFollowing(userId, requester);
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return relService.getFollowing(userId, userDetailsImpl.getUser());
 
     }
 
     @GetMapping("/is-following")
     @Operation(summary = "Check if current user follows another user")
-    public boolean isFollowing(@AuthenticationPrincipal User requester, @RequestParam Long followingId) {
+    public boolean isFollowing(@AuthenticationPrincipal UserDetails userDetails, @RequestParam Long followingId) {
 
         User following = userService.findById(followingId)
             .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
-        return relService.isFollowing(requester, following);
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return relService.isFollowing(userDetailsImpl.getUser(), following);
     }
 
 

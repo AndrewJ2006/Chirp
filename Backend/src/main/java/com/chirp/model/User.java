@@ -19,13 +19,19 @@ import jakarta.persistence.Table;
         private String username;
         @Column(name="email", length=255, nullable=false)
         private String email;
-        @Column(name="password", length=255, nullable=false)  // increase length!
+        @Column(name="password", length=255)  // nullable for OAuth users
         private String password;
         @Column(name="created", nullable=false)
         private LocalDateTime createdAt;
 
         @Column(name = "is_private")
         private boolean isPrivate = false;
+
+        @Column(name = "oauth_provider", length = 50)
+        private String oauthProvider;  // "google", "apple", or null
+
+        @Column(name = "oauth_provider_id", length = 255)
+        private String oauthProviderId;  // unique ID from OAuth provider
 
 
         public User() {
@@ -86,6 +92,22 @@ import jakarta.persistence.Table;
 
         public void setPrivate(boolean isPrivate) {
             this.isPrivate = isPrivate;
+        }
+
+        public String getOauthProvider() {
+            return oauthProvider;
+        }
+
+        public void setOauthProvider(String oauthProvider) {
+            this.oauthProvider = oauthProvider;
+        }
+
+        public String getOauthProviderId() {
+            return oauthProviderId;
+        }
+
+        public void setOauthProviderId(String oauthProviderId) {
+            this.oauthProviderId = oauthProviderId;
         }
 
     }

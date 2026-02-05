@@ -29,7 +29,7 @@ public PostResponse createPost(User author, String content) {
     Post post = new Post(content, author);
     postRepo.save(post);
 
-    PostResponse response = new PostResponse(post.getId(), post.getContent(), post.getAuthor().getUsername(), post.getCreatedAt(), post.getUpdatedAt());
+    PostResponse response = new PostResponse(post.getId(), post.getContent(), post.getAuthor().getId(), post.getAuthor().getUsername(), post.getCreatedAt(), post.getUpdatedAt());
     return response;
 }
 
@@ -50,6 +50,7 @@ public PostResponse updatePost(User author, Long postId, String newContent) {
     return new PostResponse(
         post.getId(),
         post.getContent(),
+        post.getAuthor().getId(),
         post.getAuthor().getUsername(),
         post.getCreatedAt(),
         post.getUpdatedAt()
@@ -82,6 +83,7 @@ public PostResponse getPost(Long postId) {
     return new PostResponse(
             post.getId(),
             post.getContent(),
+            post.getAuthor().getId(),
             post.getAuthor().getUsername(),
             post.getCreatedAt(),
             post.getUpdatedAt()
@@ -94,6 +96,7 @@ public List<PostResponse> getPostsByUser(User author) {
     return posts.stream().map(post -> new PostResponse(
                                         post.getId(),
                                         post.getContent(),
+                                        post.getAuthor().getId(),
                                         post.getAuthor().getUsername(),
                                         post.getCreatedAt(),
                                         post.getUpdatedAt()
@@ -109,6 +112,7 @@ public List<PostResponse> getFeed(User currentUser) {
     return posts.stream().map(post -> new PostResponse(
                                         post.getId(),
                                         post.getContent(),
+                                        post.getAuthor().getId(),
                                         post.getAuthor().getUsername(),
                                         post.getCreatedAt(),
                                         post.getUpdatedAt()
@@ -123,6 +127,11 @@ public List<PostResponse> getFeed(User currentUser) {
 
 public List<PostResponse> getFeed(User currentUser, int page, int size) {
     List<User> following = relService.getFollowingUsers(currentUser.getId());
+    
+    if (following.isEmpty()) {
+        return List.of();
+    }
+    
     Pageable pageable = PageRequest.of(page, size);
 
     return postRepo.findAllByAuthorInOrderByCreatedAtDesc(following, pageable)
@@ -130,6 +139,7 @@ public List<PostResponse> getFeed(User currentUser, int page, int size) {
                    .map(post -> new PostResponse(
                         post.getId(),
                         post.getContent(),
+                        post.getAuthor().getId(),
                         post.getAuthor().getUsername(),
                         post.getCreatedAt(),
                         post.getUpdatedAt()

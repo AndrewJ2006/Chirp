@@ -3,6 +3,7 @@ package com.chirp.controller;
 import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chirp.config.UserDetailsImpl;
 import com.chirp.dto.PostRequest;
 import com.chirp.dto.PostResponse;
 import com.chirp.model.User;
@@ -39,20 +41,23 @@ public class PostController {
 
     @PostMapping
     @Operation(summary = "Create a post")
-    public PostResponse createPost(@AuthenticationPrincipal User author, @RequestBody PostRequest request) {
-        return postService.createPost(author, request.getContent());
+    public PostResponse createPost(@AuthenticationPrincipal UserDetails userDetails, @RequestBody PostRequest request) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return postService.createPost(userDetailsImpl.getUser(), request.getContent());
     }
 
     @PutMapping("/{postId}")
     @Operation(summary = "Update a post")
-    public PostResponse updatePost(@AuthenticationPrincipal User author, @PathVariable Long postId, @RequestBody PostRequest request) {
-        return postService.updatePost(author, postId, request.getContent());
+    public PostResponse updatePost(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long postId, @RequestBody PostRequest request) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return postService.updatePost(userDetailsImpl.getUser(), postId, request.getContent());
     }
 
     @DeleteMapping("/{postId}")
     @Operation(summary = "Delete a post")
-    public String deletePost(@AuthenticationPrincipal User author, @PathVariable Long postId) {
-        return postService.deletePost(author, postId);
+    public String deletePost(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long postId) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return postService.deletePost(userDetailsImpl.getUser(), postId);
     }
 
     @GetMapping("/{postId}")
@@ -72,10 +77,14 @@ public class PostController {
     @GetMapping("/feed")
     @Operation(summary = "Get feed of followed users")
     public List<PostResponse> getFeed(
-        @AuthenticationPrincipal User currentUser,
+        @AuthenticationPrincipal UserDetails userDetails,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
-        return postService.getFeed(currentUser, page, size);
+        if (userDetails == null) {
+            throw new IllegalArgumentException("User must be authenticated");
+        }
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return postService.getFeed(userDetailsImpl.getUser(), page, size);
     }
 
 }

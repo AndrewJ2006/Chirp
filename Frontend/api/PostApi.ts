@@ -7,6 +7,7 @@ export interface PostRequest {
 export interface PostResponse {
 	id: number;
 	content: string;
+	authorId: number;
 	authorUsername: string;
 	createdAt: string;
 	updatedAt: string;
@@ -24,8 +25,8 @@ export const deletePost = (postId: number) =>
 export const getPost = (postId: number) =>
 	apiGet<PostResponse>(`/posts/${postId}`);
 
-export const getPostsByUser = (userId: number) =>
-	apiGet<PostResponse[]>(`/posts/users/${userId}/posts`);
+export const getPostsByUser = (userId: number, page = 0, size = 20) =>
+	apiGet<PostResponse[]>(`/posts/users/${userId}/posts?page=${page}&size=${size}`);
 
 export const getFeed = (page = 0, size = 10) =>
 	apiGet<PostResponse[]>(`/posts/feed?page=${page}&size=${size}`);

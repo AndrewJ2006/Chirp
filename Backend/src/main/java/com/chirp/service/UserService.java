@@ -1,7 +1,9 @@
 package com.chirp.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.chirp.config.CustomUserDetails;
 import com.chirp.config.JwtService;
+import com.chirp.config.UserDetailsImpl;
 import com.chirp.dto.LoginRequest;
 import com.chirp.dto.ProfileRequest;
 import com.chirp.dto.RegisterRequest;
@@ -130,13 +133,32 @@ private final JwtService jwtService;
     return userRepository.findById(id);
     }
 
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+    }
+
+    public List<ProfileRequest> searchUsers(String query) {
+        List<User> users = userRepository.searchUsers(query);
+        return users.stream()
+            .map(user -> {
+                ProfileRequest profile = new ProfileRequest();
+                profile.setId(user.getId());
+                profile.setUsername(user.getUsername());
+                profile.setEmail(user.getEmail());
+                profile.setCreatedAt(user.getCreatedAt());
+                return profile;
+            })
+            .collect(Collectors.toList());
+    }
+
 
     //for JWT, spring secuirty for user
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        return new CustomUserDetails(user);
+        return new UserDetailsImpl(user);
 
     }
 }

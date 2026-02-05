@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chirp.config.UserDetailsImpl;
 import com.chirp.dto.LikeResponse;
 import com.chirp.model.User;
 import com.chirp.service.LikeService;
@@ -35,14 +37,16 @@ public class LikeController {
 
     @PostMapping("/{postId}")
     @Operation(summary = "Like a post")
-    public LikeResponse addLike(@AuthenticationPrincipal User currentUser, @PathVariable Long postId) {
-        return likeService.addLike(currentUser, postId);
+    public LikeResponse addLike(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long postId) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return likeService.addLike(userDetailsImpl.getUser(), postId);
     }
 
     @DeleteMapping("/{postId}")
     @Operation(summary = "Remove a like")
-    public String removeLike(@AuthenticationPrincipal User currentUser, @PathVariable Long postId) {
-        return likeService.removeLike(currentUser, postId);
+    public String removeLike(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long postId) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return likeService.removeLike(userDetailsImpl.getUser(), postId);
     }
 
     @GetMapping("/post/{postId}")
@@ -63,7 +67,8 @@ public class LikeController {
 
     @GetMapping("/post/{postId}/status")
     @Operation(summary = "Get like status for current user")
-    public LikeResponse getLikeStatus(@AuthenticationPrincipal User currentUser, @PathVariable Long postId) {
-        return likeService.getLikeStatus(currentUser, postId);
+    public LikeResponse getLikeStatus(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long postId) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+        return likeService.getLikeStatus(userDetailsImpl.getUser(), postId);
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.chirp.dto.Follower;
 import com.chirp.dto.Following;
@@ -62,6 +63,7 @@ public class RelService {
         return dto;
     }
 
+    @Transactional
     public Following unfollowUser(User follower, User following) {
 
         if(relReop.findByFollowerAndFollowing(follower, following).isEmpty()) {
