@@ -18,6 +18,7 @@ export interface ConversationUser {
   id: number;
   username: string;
   email: string;
+  profilePictureUrl?: string;
 }
 
 export const getRecentConversations = () =>

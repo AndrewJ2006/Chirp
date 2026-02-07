@@ -55,6 +55,7 @@ export default function NotificationsPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("chirp_token");
+    localStorage.removeItem("currentUserData");
     navigate("/login");
   };
 
@@ -115,7 +116,19 @@ export default function NotificationsPage() {
             <span></span>
             <span>Bookmarks</span>
           </button>
-          <button className="nav-item" onClick={() => currentUser && navigate(`/profile/${currentUser.id}`)}>
+          <button className="nav-item" onClick={async () => {
+            try {
+              const user = await getCurrentUser();
+              if (user?.id) {
+                navigate(`/profile/${user.id}`);
+              } else {
+                alert("Unable to load profile. Please try again.");
+              }
+            } catch (err) {
+              console.error("Failed to get current user:", err);
+              alert("Unable to load profile. Please try logging in again.");
+            }
+          }}>
             <span></span>
             <span>Profile</span>
           </button>

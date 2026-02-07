@@ -33,37 +33,45 @@ export default function ProfilePage() {
   const [editProfilePicture, setEditProfilePicture] = useState("");
   const [editLoading, setEditLoading] = useState(false);
 
-  const loadProfile = async () => {
-    if (!userId) return;
+  const loadProfile = async (userIdParam?: string) => {
+    const idToLoad = userIdParam || userId;
+    if (!idToLoad || isNaN(parseInt(idToLoad)) || parseInt(idToLoad) <= 0) {
+      console.error("Invalid userId:", idToLoad);
+      setError("Invalid user ID");
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
 
-      const profileData = await getUserProfile(parseInt(userId));
+      console.log("Fetching profile for userId:", idToLoad);
+      const profileData = await getUserProfile(parseInt(idToLoad));
+      console.log("Profile loaded:", profileData);
       setProfile(profileData);
 
       const [followersData, followingData, postsData] = await Promise.all([
-        getFollowers(parseInt(userId)),
-        getFollowing(parseInt(userId)),
-        getPostsByUser(parseInt(userId), 0, 20)
+        getFollowers(parseInt(idToLoad)).catch(() => []),
+        getFollowing(parseInt(idToLoad)).catch(() => []),
+        getPostsByUser(parseInt(idToLoad), 0, 20).catch(() => [])
       ]);
 
-      setFollowers(followersData);
-      setFollowing(followingData);
+      setFollowers(followersData || []);
+      setFollowing(followingData || []);
 
       const postsWithEngagement = await Promise.all(
-        postsData.map(async (post) => {
+        (postsData || []).map(async (post) => {
           try {
             const [likeStatus, postComments] = await Promise.all([
-              getLikeStatus(post.id),
-              getCommentsByPost(post.id)
+              getLikeStatus(post.id).catch(() => ({ likeCount: 0, likedByCurrentUser: false })),
+              getCommentsByPost(post.id).catch(() => [])
             ]);
             return {
               ...post,
-              likeCount: likeStatus.likeCount || 0,
-              commentCount: postComments.length || 0,
-              isLiked: likeStatus.likedByCurrentUser || false
+              likeCount: likeStatus?.likeCount || 0,
+              commentCount: postComments?.length || 0,
+              isLiked: likeStatus?.likedByCurrentUser || false
             };
           } catch {
             return {
@@ -76,16 +84,34 @@ export default function ProfilePage() {
         })
       );
 
-      setPosts(postsWithEngagement);
+      setPosts(postsWithEngagement.filter(Boolean));
 
       try {
-        const followStatus = await isFollowing(parseInt(userId));
-        setIsFollowingUser(followStatus);
-      } catch {
+        const followStatus = await isFollowing(parseInt(idToLoad));
+        setIsFollowingUser(followStatus || false);
+      } catch (err) {
+        console.error("Error checking follow status:", err);
         setIsFollowingUser(false);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load profile";
+      console.error("Error loading profile:", message, err);
+      
+      // If the error is "User not found", clear cached user data and redirect to login
+      if (message.includes("User not found") || message.includes("not found")) {
+        console.log("User not found - clearing cached data");
+        localStorage.removeItem("currentUserData");
+        
+        // If we're trying to load our own profile but the user doesn't exist, 
+        // the token might be invalid - redirect to login
+        const isCurrentUser = localStorage.getItem("currentUserData");
+        if (!isCurrentUser && currentUser?.id === parseInt(idToLoad)) {
+          localStorage.removeItem("chirp_token");
+          navigate("/login");
+          return;
+        }
+      }
+      
       setError(message);
     } finally {
       setLoading(false);
@@ -96,12 +122,22 @@ export default function ProfilePage() {
     const loadCurrentUser = async () => {
       try {
         const curr = await getCurrentUser();
+        console.log("Current user loaded:", curr);
         setCurrentUser(curr);
       } catch (err) {
         console.error("Failed to load current user:", err);
       }
     };
 
+    console.log("ProfilePage useEffect - userId from params:", userId);
+    if (!userId) {
+      console.error("No userId provided in route params");
+      setError("Invalid user ID");
+      setLoading(false);
+      return;
+    }
+
+    console.log("Loading profile for userId:", userId);
     loadCurrentUser();
     loadProfile();
   }, [userId]);
@@ -267,6 +303,7 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("chirp_token");
+    localStorage.removeItem("currentUserData");
     navigate("/login");
   };
 

@@ -96,7 +96,7 @@ export default function FeedPage() {
     if (cachedUser) {
       try {
         const user = JSON.parse(cachedUser);
-        setCurrentUser({ id: user.id, username: user.username });
+        setCurrentUser(user);
         return;
       } catch (e) {
         console.error("Failed to parse cached user data");
@@ -107,6 +107,8 @@ export default function FeedPage() {
     getCurrentUser()
       .then(user => {
         setCurrentUser(user);
+        // Always store the latest user data in localStorage
+        localStorage.setItem('currentUserData', JSON.stringify(user));
       })
       .catch(err => {
         console.error("Failed to fetch current user", err);
@@ -118,7 +120,7 @@ export default function FeedPage() {
       if (e.key === "currentUserData" && e.newValue) {
         try {
           const user = JSON.parse(e.newValue);
-          setCurrentUser({ id: user.id, username: user.username });
+          setCurrentUser(user);
         } catch (error) {
           console.error("Failed to parse updated user data");
         }
@@ -222,6 +224,7 @@ export default function FeedPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("chirp_token");
+    localStorage.removeItem("currentUserData");
     navigate("/login");
   };
 
@@ -344,7 +347,19 @@ export default function FeedPage() {
             <span></span>
             <span>Bookmarks</span>
           </button>
-          <button className="nav-item" onClick={() => currentUser && navigate(`/profile/${currentUser.id}`)}>
+          <button className="nav-item" onClick={async () => {
+            try {
+              const user = await getCurrentUser();
+              if (user?.id) {
+                navigate(`/profile/${user.id}`);
+              } else {
+                alert("Unable to load profile. Please try again.");
+              }
+            } catch (err) {
+              console.error("Failed to get current user:", err);
+              alert("Unable to load profile. Please try logging in again.");
+            }
+          }}>
             <span></span>
             <span>Profile</span>
           </button>
@@ -364,9 +379,19 @@ export default function FeedPage() {
             <div className="user-menu" style={{ right: "-160px" }}>
               <button 
                 className="menu-item"
-                onClick={() => {
-                  navigate(`/profile/${currentUser?.id}`);
-                  setShowMenu(false);
+                onClick={async () => {
+                  try {
+                    const user = await getCurrentUser();
+                    if (user?.id) {
+                      navigate(`/profile/${user.id}`);
+                      setShowMenu(false);
+                    } else {
+                      alert("Unable to load profile. Please try again.");
+                    }
+                  } catch (err) {
+                    console.error("Failed to get current user:", err);
+                    alert("Unable to load profile. Please try logging in again.");
+                  }
                 }}
               >
                 View My Profile
