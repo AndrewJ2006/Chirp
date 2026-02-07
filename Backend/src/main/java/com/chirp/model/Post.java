@@ -21,7 +21,7 @@ public class Post {
     Long id;
     @Column(nullable = false, length = 280)
     String content;
-    @Column(length = 10000000)
+    @Column(columnDefinition = "TEXT")
     String mediaUrl;
     @ManyToOne(optional = false)
     User author;
