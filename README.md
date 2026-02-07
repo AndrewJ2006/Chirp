@@ -1,6 +1,6 @@
-Chirp
+# Chirp
 
-Features
+## Features
 
 - User authentication and authorization using **JWT + Spring Security**
 - Create, like, and delete posts
@@ -62,8 +62,8 @@ cd chirp
 docker-compose up --build
 ```
 
-
+<img width="1905" height="1088" alt="Screenshot From 2026-02-07 10-45-26" src="https://github.com/user-attachments/assets/37af9ac5-1875-4ac9-b170-cd3b8a9254ae" />
 <img width="1905" height="1088" alt="Screenshot From 2026-02-07 10-43-44" src="https://github.com/user-attachments/assets/24a60486-9814-4328-8aab-42181a548e5a" />
 <img width="1905" height="1088" alt="Screenshot From 2026-02-07 10-44-47" src="https://github.com/user-attachments/assets/385a0202-183c-45b4-bfb4-f1f8bd12d685" />
 <img width="1905" height="1088" alt="Screenshot From 2026-02-07 10-45-02" src="https://github.com/user-attachments/assets/730428b4-9dde-4c2d-b852-53761ab0965d" />
-<img width="1905" height="1088" alt="Screenshot From 2026-02-07 10-45-26" src="https://github.com/user-attachments/assets/37af9ac5-1875-4ac9-b170-cd3b8a9254ae" />
+
