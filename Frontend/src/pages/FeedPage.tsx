@@ -158,21 +158,38 @@ export default function FeedPage() {
       setPostingInProgress(true);
       
       let mediaData: string | undefined = undefined;
-      if (feedMediaFile) {
+      
+      // Check if modal has media (already converted to base64)
+      if (mediaUrl) {
+        mediaData = mediaUrl;
+      }
+      // Otherwise check if inline composer has a file
+      else if (feedMediaFile) {
+        // Convert file to base64 data URL
         const reader = new FileReader();
         mediaData = await new Promise<string>((resolve) => {
-          reader.onloadend = () => resolve(reader.result as string);
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            console.log("Media data URL length:", result.length);
+            resolve(result);
+          };
           reader.readAsDataURL(feedMediaFile);
         });
       }
       
-      await createPost({ content: newPostContent, mediaUrl: mediaData });
+      console.log("Creating post with mediaUrl:", mediaData ? `base64 (${mediaData.length} chars)` : "none");
+      const newPost = await createPost({ content: newPostContent, mediaUrl: mediaData });
+      console.log("Post created successfully:", newPost);
+      
       setNewPostContent("");
+      setMediaUrl("");
+      setMediaPreview(null);
       setFeedMediaFile(null);
       setFeedMediaPreview(null);
       await loadFeed();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create post";
+      console.error("Error creating post:", err);
       setError(message);
     } finally {
       setPostingInProgress(false);

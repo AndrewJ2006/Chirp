@@ -23,9 +23,7 @@ services:
     command: redis-server --appendonly yes
 
   backend:
-    build:
-      context: ..
-      dockerfile: Docker/backend.Dockerfile
+    image: ghcr.io/andrewj2006/chirp/backend:latest
     container_name: chirp-backend
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/chirp
@@ -41,11 +39,7 @@ services:
       - "8080:8080"
 
   frontend:
-    build:
-      context: ..
-      dockerfile: Docker/frontend.Dockerfile
-      args:
-        VITE_API_BASE_URL: http://localhost:8080
+    image: ghcr.io/andrewj2006/chirp/frontend:latest
     container_name: chirp-frontend
     depends_on:
       - backend

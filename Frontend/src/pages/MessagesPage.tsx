@@ -71,20 +71,37 @@ export default function MessagesPage() {
   };
 
   const handleSelectUser = async (user: UserProfile | ConversationUser) => {
-    const userProfile: UserProfile = {
-      id: user.id,
-      username: user.username,
-      email: user.email
-    };
-    setSelectedUser(userProfile);
-    setSendError(null);
-    setSearchResults([]);
-    setSearchQuery(user.username);
     try {
-      const convo = await getConversation(user.id);
-      setMessages(convo);
+      // Fetch fresh user data to get updated profile picture
+      const freshUserData = await searchUsers(user.username);
+      const updatedUser = freshUserData.find(u => u.id === user.id) || {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        profilePictureUrl: user.profilePictureUrl
+      };
+      
+      setSelectedUser(updatedUser);
+      setSendError(null);
+      setSearchResults([]);
+      setSearchQuery(user.username);
+      
+      try {
+        const convo = await getConversation(user.id);
+        setMessages(convo);
+      } catch (err) {
+        console.error("Failed to load conversation:", err);
+      }
     } catch (err) {
-      console.error("Failed to load conversation:", err);
+      console.error("Failed to fetch user data:", err);
+      // Fallback to the original user data if search fails
+      const userProfile: UserProfile = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        profilePictureUrl: user.profilePictureUrl
+      };
+      setSelectedUser(userProfile);
     }
   };
 
