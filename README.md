@@ -60,8 +60,9 @@ Chirp uses **JWT-based authentication**:
 
 ```bash
 git clone https://github.com/your-username/chirp.git
-cd chirp
+cd Chirp/Docker
 docker-compose up --build
+http://localhost:5173
 ```
 
 
