@@ -1,6 +1,6 @@
 # Chirp
 
-Features
+
 ## Features
 
 - User authentication and authorization using **JWT + Spring Security**
