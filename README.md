@@ -1,4 +1,3 @@
-Chirp
 # Chirp
 
 Features
